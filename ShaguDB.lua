@@ -1,6 +1,5 @@
 -- clear variables
 ShaguDB_QuestZoneInfo = {};
-cMark = "mk1";
 
 -- Register on event for "VARIABLES_LOADED"
 ShaguDB_VARIABLES_LOADED = CreateFrame("Frame")
@@ -43,6 +42,54 @@ ShaguDB_VARIABLES_LOADED:SetScript("OnEvent", function(self, event, ...)
     Cartographer_Notes:RegisterIcon("mk8", {
         text = "Mark 8",
         path = "Interface\\AddOns\\ShaguDB\\symbols\\mk8",
+      })
+    Cartographer_Notes:RegisterIcon("mk9", {
+        text = "Mark 9",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk9",
+      })
+    Cartographer_Notes:RegisterIcon("mk10", {
+        text = "Mark 10",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk10",
+      })
+    Cartographer_Notes:RegisterIcon("mk11", {
+        text = "Mark 11",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk11",
+      })
+    Cartographer_Notes:RegisterIcon("mk12", {
+        text = "Mark 12",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk12",
+      })
+    Cartographer_Notes:RegisterIcon("mk13", {
+        text = "Mark 13",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk13",
+      })
+    Cartographer_Notes:RegisterIcon("mk14", {
+        text = "Mark 14",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk14",
+      })
+    Cartographer_Notes:RegisterIcon("mk15", {
+        text = "Mark 15",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk15",
+      })
+    Cartographer_Notes:RegisterIcon("mk16", {
+        text = "Mark 16",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk16",
+      })
+    Cartographer_Notes:RegisterIcon("mk17", {
+        text = "Mark 17",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk17",
+      })
+    Cartographer_Notes:RegisterIcon("mk18", {
+        text = "Mark 18",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk18",
+      })
+    Cartographer_Notes:RegisterIcon("mk19", {
+        text = "Mark 19",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk19",
+      })
+    Cartographer_Notes:RegisterIcon("mk20", {
+        text = "Mark 20",
+        path = "Interface\\AddOns\\ShaguDB\\symbols\\mk20",
       })
     Cartographer_Notes:RegisterIcon("quest", {
         text = "Quest",
@@ -154,7 +201,6 @@ SlashCmdList["SHAGU"] = function(input, editbox)
         ShaguDB_searchMonster(monsterName,questTitle,true);
       end
     end
-    ShaguDB_NextCMark();
     ShaguDB_ShowMap();
   end
 
@@ -190,24 +236,27 @@ function ShaguDB_Print(string)
 end
 
 
-function ShaguDB_NextCMark()
-  if (cMark == "mk1") then
-    cMark = "mk2";
-  elseif (cMark == "mk2") then
-    cMark = "mk3";
-  elseif (cMark == "mk3") then
-    cMark = "mk4";
-  elseif (cMark == "mk4") then
-    cMark = "mk5";
-  elseif (cMark == "mk5") then
-    cMark = "mk6";
-  elseif (cMark == "mk6") then
-    cMark = "mk7";
-  elseif (cMark == "mk7") then
-    cMark = "mk8";
-  elseif (cMark == "mk8") then
-    cMark = "mk1";
-  end
+function ShaguDB_NextCMark(given_questTitle)
+	local cMark = 1;
+	local questLogID = 1;
+								
+	while (GetQuestLogTitle(questLogID) ~= nil) do
+		questLogID = questLogID + 1;
+		
+		local questTitle, level, questTag, isHeader, isCollapsed, isComplete = GetQuestLogTitle(questLogID);
+		
+		if (not isHeader and questTitle ~= nil) then
+			cMark = cMark + 1;
+			if questTitle == given_questTitle then
+				-- quest id found
+				-- todo: save mk icon to list til quest ist completed - so it never changes, even there is a new quest
+				cMark = "mk" .. cMark;
+				break;
+			end
+		end
+	end
+	
+	return cMark;
 end
 
 
@@ -282,8 +331,7 @@ end
 
 function ShaguDB_searchMonster(monsterName,questTitle,questGiver)
   if (monsterName ~= nil and spawnDB[monsterName] ~= nil and spawnDB[monsterName]["coords"] ~= nil) then
-    ShaguDB_NextCMark()
-
+    
     -- show chat header if not EQL
     if(questTitle == nil) then
       ShaguDB_Print("|cffffcc33ShaguDB: |cffffffffSpawns of |cff33ff88"..monsterName.."|cffffffff can be found at:" );
@@ -311,7 +359,7 @@ function ShaguDB_searchMonster(monsterName,questTitle,questGiver)
         if(questGiver ~= nil) then
           table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, "Quest: "..questTitle, monsterName .. level, "quest", 0});
         else
-          table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, "Quest: "..questTitle, "Kill: "..monsterName .. level, cMark, 0});
+          table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, "Quest: "..questTitle, "Kill: "..monsterName .. level, ShaguDB_NextCMark(questTitle), 0});
         end
       else
         if (zoneName ~= oldZone and strfind(zoneList, zoneName) == nil) then
@@ -322,7 +370,7 @@ function ShaguDB_searchMonster(monsterName,questTitle,questGiver)
             showmax = showmax + 1;
           end
         end
-        table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, monsterName, "Coords: " .. coordx..","..coordy .. level, cMark, 0});
+        table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, monsterName, "Coords: " .. coordx..","..coordy .. level, ShaguDB_NextCMark(questTitle), 0});
       end
     end
   end
@@ -333,8 +381,7 @@ function ShaguDB_searchItem(itemName,questTitle,autotrack)
   local runonce = false;
   firstIsBest = false;
   local showmax = 0;
-  ShaguDB_NextCMark();
-
+  
   if (itemName ~= nil and itemDB[itemName] ~= nil) then
 
     for id, monsterNameDrop in pairs(itemDB[itemName]) do
@@ -362,13 +409,13 @@ function ShaguDB_searchItem(itemName,questTitle,autotrack)
             end
 
             if questTitle ~= nil and autotrack and showmax < 5 then
-              table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, "Quest: "..questTitle, monsterName .. level .. "\nLoot: " ..itemName .. "\nDropchance: " .. dropRate, cMark, 0});
+              table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, "Quest: "..questTitle, monsterName .. level .. "\nLoot: " ..itemName .. "\nDropchance: " .. dropRate, ShaguDB_NextCMark(questTitle), 0});
             elseif questTitle ~= nil and not autotrack then
-              table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, "Quest: "..questTitle, monsterName .. level .. "\nLoot: " ..itemName .. "\nDropchance: " .. dropRate, cMark, 0});
+              table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, "Quest: "..questTitle, monsterName .. level .. "\nLoot: " ..itemName .. "\nDropchance: " .. dropRate, ShaguDB_NextCMark(questTitle), 0});
             end
 
             if questTitle == nil then
-              table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, itemName, monsterName .. level .. "\nDrop: " .. dropRate, cMark, 0});
+              table.insert(ShaguDB_MAP_NOTES,{zoneName, coordx, coordy, itemName, monsterName .. level .. "\nDrop: " .. dropRate, ShaguDB_NextCMark(questTitle), 0});
             end
 
             -- set best map
