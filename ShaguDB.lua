@@ -220,11 +220,11 @@ function ShaguDB_CleanMap()
 end
 
 
-function ShaguDB_ShowMap()
+function ShaguDB_ShowMap(dont_open_map)
   local ShowMapZone, ShowMapTitle, ShowMapID = ShaguDB_PlotNotesOnMap();
 
   if (Cartographer) then
-    if (ShowMapZone ~= nil) then
+    if (ShowMapZone ~= nil) and not dont_open_map then
       WorldMapFrame:Show();
       if (bestZone ~= nil) then
         cKey, zKey = ShaguDB_GetMapIDFromZone(bestZone)
